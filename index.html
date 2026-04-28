@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolarScope – Instant Solar Audit Platform</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { DEFAULT: '#0A2540', 800: '#0d2d4a', 900: '#061828' },
+            solar: { DEFAULT: '#FDB813', dark: '#e8a500', light: '#FFD966' },
+          },
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Paystack -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, .font-display { font-family: 'Syne', sans-serif; }
+
+    :root {
+      --navy: #0A2540;
+      --solar: #FDB813;
+      --solar-dark: #e8a500;
+      --bg: #f5f7fa;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--navy); overflow-x: hidden; }
+
+    /* PAGE TRANSITIONS */
+    .page { display: none; opacity: 0; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .page.active { display: block; opacity: 1; transform: translateY(0); }
+
+    /* GLASSMORPHISM */
+    .glass {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .glass-navy {
+      background: rgba(10,37,64,0.82);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* HERO BACKGROUND */
+    .hero-bg {
+      background: linear-gradient(135deg, #0A2540 0%, #0d3a60 50%, #0a2540 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(253,184,19,0.18) 0%, transparent 70%);
+      top: -200px; right: -150px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(253,184,19,0.10) 0%, transparent 70%);
+      bottom: -100px; left: -80px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* SOLAR PULSE ANIMATION */
+    @keyframes pulse-solar {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(253,184,19,0.4); }
+      50% { box-shadow: 0 0 0 16px rgba(253,184,19,0); }
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #FDB813, #e8a500);
+      color: #0A2540;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      border-radius: 14px;
+      padding: 16px 36px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      animation: pulse-solar 2.4s ease-in-out infinite;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(253,184,19,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: transparent;
+      color: #FDB813;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      border: 2px solid #FDB813;
+      border-radius: 14px;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(253,184,19,0.1); }
+
+    .btn-navy {
+      background: #0A2540;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      border-radius: 14px;
+      padding: 16px 36px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-navy:hover { background: #0d3a60; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,37,64,0.3); }
+
+    /* INPUT STYLES */
+    .form-input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      color: #0A2540;
+    }
+    .form-input:focus { border-color: #FDB813; box-shadow: 0 0 0 4px rgba(253,184,19,0.12); }
+    .form-label { font-weight: 600; font-size: 0.875rem; color: #0A2540; margin-bottom: 6px; display: block; }
+
+    /* CARD */
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(10,37,64,0.07), 0 1px 4px rgba(10,37,64,0.04);
+      border: 1px solid rgba(10,37,64,0.06);
+    }
+
+    /* FEATURE ICON */
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #FDB813, #FFD966);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    /* COUNTER CONTROL */
+    .qty-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid #e2e8f0;
+      background: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      color: #0A2540;
+    }
+    .qty-btn:hover { border-color: #FDB813; background: rgba(253,184,19,0.08); }
+
+    /* LOCK OVERLAY */
+    .lock-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,37,64,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* RESULT CARD */
+    .result-metric {
+      background: linear-gradient(135deg, #0A2540, #0d3a60);
+      border-radius: 16px;
+      color: #fff;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-metric::after {
+      content: '';
+      position: absolute;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(253,184,19,0.2), transparent 70%);
+      top: -20px; right: -20px;
+      border-radius: 50%;
+    }
+
+    /* PRICING TIER */
+    .pricing-tier {
+      border-radius: 16px;
+      padding: 24px;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      cursor: default;
+      display: flex;
+      flex-direction: column;
+      min-height: 180px;
+    }
+    .pricing-tier.standard { border-color: #FDB813; background: rgba(253,184,19,0.05); }
+    .pricing-tier .price-amount {
+      font-size: 1.75rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    /* PROGRESS STEPS */
+    .step-dot {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-dot.done { background: #FDB813; color: #0A2540; }
+    .step-dot.active { background: #0A2540; color: #FDB813; border: 2px solid #FDB813; }
+    .step-dot.pending { background: #e2e8f0; color: #94a3b8; }
+
+    /* TABS */
+    .tab-btn { padding: 10px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Syne', sans-serif; font-size: 0.9rem; border: none; }
+    .tab-btn.active { background: #0A2540; color: #FDB813; }
+    .tab-btn.inactive { background: #f0f4f8; color: #64748b; }
+    .tab-btn.inactive:hover { background: #e2e8f0; }
+
+    /* TOOLTIP */
+    .dev-banner { background: linear-gradient(90deg, #7c3aed, #5b21b6); color: #fff; font-size: 0.78rem; text-align: center; padding: 6px; font-weight: 600; letter-spacing: 0.04em; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes shimmer { 0%,100%{opacity:1}50%{opacity:.5} }
+    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+    @keyframes glow-pulse { 0%,100%{box-shadow:0 0 20px rgba(253,184,19,0.3)}50%{box-shadow:0 0 40px rgba(253,184,19,0.6)} }
+    @keyframes slideInLeft { from { opacity:0; transform:translateX(-30px) } to { opacity:1; transform:translateX(0) } }
+    @keyframes slideInRight { from { opacity:0; transform:translateX(30px) } to { opacity:1; transform:translateX(0) } }
+    @keyframes text-gradient { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+    @keyframes float-sun { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-15px) rotate(5deg)} }
+
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up-1 { animation-delay: 0.05s; }
+    .fade-up-2 { animation-delay: 0.12s; }
+    .fade-up-3 { animation-delay: 0.2s; }
+    .fade-up-4 { animation-delay: 0.28s; }
+    .fade-up-5 { animation-delay: 0.36s; }
+
+    .float { animation: float 3s ease-in-out infinite; }
+    .float-delay-1 { animation-delay: 0.5s; }
+    .float-delay-2 { animation-delay: 1s; }
+    .glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+    .slide-in-left { animation: slideInLeft 0.6s ease forwards; }
+    .slide-in-right { animation: slideInRight 0.6s ease forwards; }
+    .float-sun { animation: float-sun 4s ease-in-out infinite; }
+
+    .spinner { width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #FDB813; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+
+    /* STICKY HEADER */
+    #site-header { position: sticky; top: 0; z-index: 90; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+
+    /* WHATSAPP */
+    .wa-btn { background: #25D366; color: #fff; border-radius: 14px; padding: 14px 28px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+    .wa-btn:hover { background: #1ebe5a; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.35); }
+
+    /* RANGE SLIDER */
+    input[type=range] { -webkit-appearance: none; height: 6px; border-radius: 4px; background: #e2e8f0; outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #FDB813; cursor: pointer; box-shadow: 0 2px 8px rgba(253,184,19,0.4); }
+
+    /* MOBILE MENU */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    .scroll-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Tier highlight */
+    .tier-badge { background: linear-gradient(90deg,#FDB813,#FFD966); color: #0A2540; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; font-family:'Syne',sans-serif; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ DEV BANNER ═══════════════════ -->
+<div id="dev-banner" class="dev-banner hidden">
+  ⚡ DEVELOPER MODE ACTIVE — Payment bypassed &nbsp;|&nbsp;
+  <button onclick="resetSession()" class="underline cursor-pointer font-bold">🔄 Reset &amp; Start Over</button>
+  &nbsp;|&nbsp;
+  <button onclick="disableDevMode()" class="underline cursor-pointer">Disable Dev Mode</button>
+</div>
+
+<!-- ═══════════════════ STICKY HEADER ═══════════════════ -->
+<header id="site-header" class="bg-white/80 border-b border-slate-100">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-solar rounded-lg flex items-center justify-center">
+        <span class="text-navy font-display font-black text-sm">☀</span>
+      </div>
+      <span class="font-display font-bold text-navy text-lg">Solar<span class="text-solar">Scope</span></span>
+    </div>
+    <!-- Desktop Nav -->
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+      <a href="#features" class="hover:text-navy transition-colors">Features</a>
+      <a href="#how-it-works" class="hover:text-navy transition-colors">How it Works</a>
+      <a href="#pricing" class="hover:text-navy transition-colors">Pricing</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <button id="devModeToggle" onclick="toggleDevMode()" class="hidden md:block text-xs px-3 py-1.5 rounded-lg bg-purple-100 text-purple-700 font-semibold hover:bg-purple-200 transition-colors">Dev Mode</button>
+      <button onclick="goToPage('form')" class="btn-primary text-sm py-2.5 px-5" style="animation:none">Start Audit →</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 1: LANDING
+═══════════════════════════════════════════════════════ -->
+<div id="page-landing" class="page active">
+
+  <!-- HERO -->
+  <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 py-24 relative z-10 w-full">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white/80 text-sm mb-8 fade-up hover:bg-white/20 transition-colors cursor-default">
+            <span class="w-2 h-2 bg-solar rounded-full animate-pulse"></span>
+            <span class="typing-effect">Professional Solar Audit — Instant Results</span>
+          </div>
+
+          <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6 fade-up fade-up-1">
+            <span class="inline-block">Get Your Complete</span><br/>
+            <span class="inline-block text-solar float-sun">Solar System</span><br/>
+            <span class="inline-block">Design in Minutes</span>
+          </h1>
+          <p class="text-white/70 text-lg mb-10 max-w-md leading-relaxed fade-up fade-up-2">
+            No site visit. No guesswork. Professional solar audit instantly — with full cost estimates and a downloadable PDF report.
+          </p>
+
+          <!-- Social proof -->
+          <div class="mt-12 flex items-center gap-4 text-white/60 text-sm fade-up fade-up-4">
+            <div class="flex -space-x-2">
+              <div class="w-8 h-8 rounded-full bg-solar flex items-center justify-center text-navy font-bold text-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer">A</div>
+              <div class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold text-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer">K</div>
+              <div class="w-8 h-8 rounded-full bg-green-400 flex items-center justify-center text-white font-bold text-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer">O</div>
+              <div class="w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center text-white font-bold text-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer">E</div>
+            </div>
+            <span>Trusted by <strong class="text-white">1,200+</strong> homeowners &amp; engineers</span>
+          </div>
+        </div>
+
+        <!-- Animated Solar Panel Visual -->
+        <div class="hidden md:flex items-center justify-center relative fade-up fade-up-2">
+          <div class="relative w-80 h-80">
+            <!-- Sun glow -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-solar rounded-full blur-3xl opacity-60 float"></div>
+            <div class="absolute top-8 right-8 w-20 h-20 bg-solar rounded-full blur-xl opacity-80 float float-delay-1"></div>
+            
+            <!-- Main sun -->
+            <div class="absolute top-4 right-4 w-16 h-16 bg-solar rounded-full flex items-center justify-center text-3xl shadow-lg glow-pulse">☀</div>
+            
+            <!-- Solar panels grid -->
+            <div class="absolute bottom-0 left-0 right-0 flex justify-center gap-2">
+              <!-- Panel 1 -->
+              <div class="w-20 h-28 bg-navy/80 rounded-lg border-2 border-solar/30 relative overflow-hidden float float-delay-1" style="transform: perspective(200px) rotateX(15deg);">
+                <div class="absolute inset-0 grid grid-cols-3 grid-rows-4 gap-0.5 p-1">
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                </div>
+                <div class="absolute bottom-1 left-1 right-1 h-1 bg-solar/40 rounded-full"></div>
+              </div>
+              <!-- Panel 2 -->
+              <div class="w-20 h-28 bg-navy/80 rounded-lg border-2 border-solar/30 relative overflow-hidden float" style="transform: perspective(200px) rotateX(15deg);">
+                <div class="absolute inset-0 grid grid-cols-3 grid-rows-4 gap-0.5 p-1">
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                </div>
+                <div class="absolute bottom-1 left-1 right-1 h-1 bg-solar/40 rounded-full"></div>
+              </div>
+              <!-- Panel 3 -->
+              <div class="w-20 h-28 bg-navy/80 rounded-lg border-2 border-solar/30 relative overflow-hidden float float-delay-2" style="transform: perspective(200px) rotateX(15deg);">
+                <div class="absolute inset-0 grid grid-cols-3 grid-rows-4 gap-0.5 p-1">
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                  <div class="bg-blue-900/60 rounded-sm"></div>
+                </div>
+                <div class="absolute bottom-1 left-1 right-1 h-1 bg-solar/40 rounded-full"></div>
+              </div>
+            </div>
+            
+            <!-- Energy rays -->
+            <div class="absolute top-8 right-8 w-40 h-40 border border-solar/20 rounded-full animate-ping"></div>
+            <div class="absolute top-8 right-8 w-56 h-56 border border-solar/10 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            
+            <!-- Floating energy particles -->
+            <div class="absolute top-12 right-16 w-2 h-2 bg-solar rounded-full animate-pulse"></div>
+            <div class="absolute top-20 right-20 w-1.5 h-1.5 bg-solar-light rounded-full animate-pulse" style="animation-delay: 0.3s;"></div>
+            <div class="absolute top-16 right-24 w-1 h-1 bg-solar rounded-full animate-pulse" style="animation-delay: 0.6s;"></div>
+            
+            <!-- Mounting stand -->
+            <div class="absolute bottom-20 left-1/2 -translate-x-1/2 w-24 h-16 border-l-2 border-r-2 border-slate-600/50"></div>
+            <div class="absolute bottom-16 left-1/2 -translate-x-1/2 w-32 h-2 bg-slate-600/50 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-16 scroll-reveal">
+        <div class="inline-block text-solar font-display font-bold text-sm uppercase tracking-widest mb-3">What You Get</div>
+        <h2 class="font-display font-black text-4xl text-navy">Everything in One Report</h2>
+        <p class="text-slate-500 mt-3 max-w-lg mx-auto">Professional-grade analysis that engineers use — available to anyone in minutes.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">⚡</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">Accurate Load Calculation</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Input your appliances or total wattage — our engine handles the engineering math with 30% safety buffers.</p>
+        </div>
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">💰</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">Cost Estimation</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Get Low, Standard, and Premium pricing tiers with market-realistic NGN estimates for equipment and installation.</p>
+        </div>
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">🔋</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">Battery & Backup Analysis</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Know exactly what battery bank you need for 6, 8, or 10 hours of uninterrupted power supply.</p>
+        </div>
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">📄</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">Downloadable PDF Report</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">A complete engineering-style report you can share with your installer or use to compare quotes.</p>
+        </div>
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">💬</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">WhatsApp Consultation</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Send your full results directly to WhatsApp in one tap for quick consultation with a solar expert.</p>
+        </div>
+        <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
+          <div class="feature-icon mb-4">🔆</div>
+          <h3 class="font-display font-bold text-lg text-navy mb-2">Generator vs Solar ROI</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">See monthly fuel savings and calculate your exact break-even period against a petrol generator.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="py-24" style="background:linear-gradient(180deg,#f5f7fa 0%,#eef2f7 100%)">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="text-center mb-16 scroll-reveal">
+        <div class="inline-block text-solar font-display font-bold text-sm uppercase tracking-widest mb-3">Simple Process</div>
+        <h2 class="font-display font-black text-4xl text-navy">How It Works</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="text-center scroll-reveal">
+          <div class="w-14 h-14 bg-solar rounded-2xl flex items-center justify-center text-navy font-display font-black text-xl mx-auto mb-4">1</div>
+          <h3 class="font-display font-bold text-navy mb-2">Enter Your Details</h3>
+          <p class="text-slate-500 text-sm">Tell us about your project — name, location, and project type.</p>
+        </div>
+        <div class="text-center scroll-reveal">
+          <div class="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-solar font-display font-black text-xl mx-auto mb-4">2</div>
+          <h3 class="font-display font-bold text-navy mb-2">Pay Securely</h3>
+          <p class="text-slate-500 text-sm">One-time ₦10,000 audit fee via Paystack — card, transfer, or USSD.</p>
+        </div>
+        <div class="text-center scroll-reveal">
+          <div class="w-14 h-14 bg-solar rounded-2xl flex items-center justify-center text-navy font-display font-black text-xl mx-auto mb-4">3</div>
+          <h3 class="font-display font-bold text-navy mb-2">Get Your Report</h3>
+          <p class="text-slate-500 text-sm">Download your full PDF report or send directly to WhatsApp.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="py-16 hero-bg">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <h2 class="font-display font-black text-3xl text-white mb-4">
+        Used by Homeowners, Businesses &amp; Engineers
+      </h2>
+      <p class="text-white/60 mb-12">Across Nigeria — delivering professional-grade solar audits in seconds.</p>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass-navy rounded-2xl p-6 text-left">
+          <div class="flex mb-3">★★★★★</div>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">"I used SolarScope before buying my inverter. Saved me from purchasing an undersized system. The PDF was professional enough to share with my installer."</p>
+          <div class="font-display font-bold text-white text-sm">Adaeze O.</div>
+          <div class="text-white/40 text-xs">Homeowner, Lagos</div>
+        </div>
+        <div class="glass-navy rounded-2xl p-6 text-left">
+          <div class="flex mb-3">★★★★★</div>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">"As an electrical engineer, the calculation methodology is solid. I recommend this to my clients who want to understand their energy needs before coming to me."</p>
+          <div class="font-display font-bold text-white text-sm">Engr. Kola B.</div>
+          <div class="text-white/40 text-xs">Electrical Engineer, Abuja</div>
+        </div>
+        <div class="glass-navy rounded-2xl p-6 text-left">
+          <div class="flex mb-3">★★★★★</div>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">"We used this for our hotel project. The breakeven analysis alone was worth the ₦10,000. Convinced our board to go solar within the week."</p>
+          <div class="font-display font-bold text-white text-sm">Olu M.</div>
+          <div class="text-white/40 text-xs">Hotel Manager, Port Harcourt</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA STRIP -->
+  <section id="pricing" class="py-20 bg-white">
+    <div class="max-w-2xl mx-auto px-4 text-center">
+      <div class="card p-10 scroll-reveal">
+        <div class="text-5xl mb-4">☀️</div>
+        <h2 class="font-display font-black text-3xl text-navy mb-3">Ready for Your Solar Audit?</h2>
+        <p class="text-slate-500 mb-3">One payment. Full access. Instant results.</p>
+        <div class="inline-flex items-end gap-2 mb-8">
+          <span class="font-display font-black text-5xl text-navy">₦10,000</span>
+          <span class="text-slate-400 mb-1">one-time</span>
+        </div>
+        <div class="flex flex-col gap-2 mb-8 text-sm text-slate-600">
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Full appliance-based load calculator</div>
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Inverter, battery &amp; panel sizing</div>
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> 3-tier cost estimation</div>
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Downloadable PDF report</div>
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> WhatsApp sharing</div>
+        </div>
+        <button class="btn-primary w-full text-lg py-4" onclick="goToPage('form')">Start Solar Audit →</button>
+        <p class="text-xs text-slate-400 mt-4">Secured by Paystack · Card, Bank Transfer, USSD accepted</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-navy py-10 text-center">
+    <div class="font-display font-bold text-white text-lg mb-2">Solar<span class="text-solar">Scope</span></div>
+    <p class="text-white/40 text-sm">Professional Solar Audits — Instantly</p>
+    <p class="text-white/20 text-xs mt-4">© 2025 SolarScope. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 2: USER INFO FORM
+═══════════════════════════════════════════════════════ -->
+<div id="page-form" class="page min-h-screen py-12">
+  <!-- Progress -->
+  <div class="max-w-lg mx-auto px-4 mb-8">
+    <div id="progress-bar-form" class="flex items-center gap-3">
+      <div class="step-dot active">1</div>
+      <div class="flex-1 h-1 bg-slate-200 rounded-full"><div class="h-full w-0 bg-solar rounded-full transition-all duration-500" style="width:33%"></div></div>
+      <div class="step-dot pending">2</div>
+      <div class="flex-1 h-1 bg-slate-200 rounded-full"></div>
+      <div class="step-dot pending">3</div>
+    </div>
+    <div class="flex justify-between text-xs text-slate-400 mt-2">
+      <span>Your Info</span><span>Payment</span><span>Results</span>
+    </div>
+  </div>
+
+  <div class="max-w-lg mx-auto px-4">
+    <div class="card p-8">
+      <button onclick="goToPage('landing')" class="text-slate-400 hover:text-navy text-sm flex items-center gap-1 mb-6 transition-colors">
+        ← Back to Home
+      </button>
+
+      <div class="mb-8">
+        <h2 class="font-display font-black text-2xl text-navy mb-1">Your Project Details</h2>
+        <p class="text-slate-500 text-sm">Tell us about yourself and your solar project.</p>
+      </div>
+
+      <div class="space-y-5">
+        <div>
+          <label class="form-label">Full Name *</label>
+          <input id="inp-name" type="text" class="form-input" placeholder="e.g. Amaka Okafor" />
+        </div>
+        <div>
+          <label class="form-label">Email Address *</label>
+          <input id="inp-email" type="email" class="form-input" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label class="form-label">Phone Number *</label>
+          <input id="inp-phone" type="tel" class="form-input" placeholder="+234 XXX XXX XXXX" />
+        </div>
+        <div>
+          <label class="form-label">Location (City) *</label>
+          <input id="inp-city" type="text" class="form-input" placeholder="e.g. Lagos, Abuja, Kano" />
+        </div>
+        <div>
+          <label class="form-label">Project Type *</label>
+          <select id="inp-type" class="form-input">
+            <option value="">Select project type…</option>
+            <option value="Home">🏠 Home</option>
+            <option value="Office">🏢 Office</option>
+            <option value="Hotel">🏨 Hotel</option>
+            <option value="Hospital">🏥 Hospital</option>
+            <option value="Factory">🏭 Factory</option>
+            <option value="Church/School">⛪ Church / School</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="form-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm"></div>
+
+      <button onclick="handleFormSubmit()" class="btn-primary w-full mt-8 text-base">
+        Proceed to Payment →
+      </button>
+
+      <div class="mt-4 text-center">
+        <p class="text-xs text-slate-400">🔒 Your data is stored securely and never shared.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 3: CALCULATOR (LOCKED BEFORE PAYMENT)
+═══════════════════════════════════════════════════════ -->
+<div id="page-calculator" class="page min-h-screen py-12">
+  <!-- Lock Overlay -->
+  <div id="lock-overlay" class="lock-overlay">
+    <div class="glass rounded-3xl p-10 max-w-md mx-4 text-center shadow-2xl">
+      <div class="text-6xl mb-4">🔒</div>
+      <h2 class="font-display font-black text-2xl text-navy mb-3">Unlock Your Full Solar Audit</h2>
+      <p class="text-slate-600 text-sm mb-6">Complete payment to access the calculator and generate your personalized report.</p>
+      <button class="btn-primary w-full" onclick="goToPage('form')">Pay ₦10,000 to Unlock</button>
+      <p class="text-xs text-slate-400 mt-3">Secured by Paystack</p>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="max-w-3xl mx-auto px-4 mb-8">
+    <div class="flex items-center gap-3">
+      <div class="step-dot done">✓</div>
+      <div class="flex-1 h-1 bg-slate-200 rounded-full"><div class="h-full bg-solar rounded-full" style="width:100%"></div></div>
+      <div class="step-dot done">✓</div>
+      <div class="flex-1 h-1 bg-slate-200 rounded-full"><div class="h-full bg-solar rounded-full" style="width:100%"></div></div>
+      <div class="step-dot active">3</div>
+    </div>
+    <div class="flex justify-between text-xs text-slate-400 mt-2">
+      <span class="text-solar font-semibold">Your Info</span><span class="text-solar font-semibold">Payment</span><span>Calculator</span>
+    </div>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="font-display font-black text-2xl text-navy">Solar Load Calculator</h2>
+          <p class="text-slate-500 text-sm mt-1">Enter your energy needs to get your full system spec.</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">Auditing for</div>
+          <div class="font-display font-bold text-navy text-sm" id="user-name-display">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE TABS -->
+    <div class="card p-2 mb-6 inline-flex gap-2">
+      <button id="tab-simple" class="tab-btn active" onclick="setMode('simple')">⚡ Total Load (W)</button>
+      <button id="tab-appliance" class="tab-btn inactive" onclick="setMode('appliance')">🏠 Appliance Builder</button>
+    </div>
+
+    <!-- MODE 1: SIMPLE -->
+    <div id="mode-simple" class="card p-8 mb-6">
+      <h3 class="font-display font-bold text-navy mb-2">Enter Total Load</h3>
+      <p class="text-slate-500 text-sm mb-6">Input your total wattage if you already know it from your assessment.</p>
+      <div>
+        <label class="form-label">Total Load (Watts)</label>
+        <input id="simple-load" type="number" class="form-input" placeholder="e.g. 3000" min="100" max="100000"
+          oninput="updateSimpleLoad(this.value)" />
+      </div>
+      <div class="mt-4">
+        <input type="range" id="load-slider" min="500" max="30000" step="100" value="3000" class="w-full"
+          oninput="document.getElementById('simple-load').value=this.value; updateSimpleLoad(this.value)" />
+        <div class="flex justify-between text-xs text-slate-400 mt-1"><span>500W</span><span>30,000W</span></div>
+      </div>
+      <div class="mt-4 p-4 bg-solar/10 rounded-xl flex items-center gap-3">
+        <span class="text-2xl">⚡</span>
+        <div>
+          <div class="text-xs text-slate-500">Your entered load</div>
+          <div class="font-display font-bold text-navy" id="simple-display">3,000 W</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE 2: APPLIANCE -->
+    <div id="mode-appliance" class="hidden">
+      <div class="card p-6 mb-4">
+        <h3 class="font-display font-bold text-navy mb-1">Appliance-Based Builder</h3>
+        <p class="text-slate-500 text-sm mb-6">Add your appliances — we calculate the total automatically.</p>
+
+        <div class="space-y-4" id="appliance-list">
+          <!-- Rows generated by JS -->
+        </div>
+
+        <!-- Custom Appliance -->
+        <div class="mt-6 pt-5 border-t border-slate-100">
+          <h4 class="font-display font-semibold text-navy text-sm mb-3">+ Add Custom Appliance</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
+              <input id="custom-name" type="text" class="form-input" placeholder="Appliance name" />
+            </div>
+            <input id="custom-watts" type="number" class="form-input" placeholder="Watts" min="1" />
+          </div>
+          <button onclick="addCustomAppliance()" class="mt-3 btn-navy text-sm py-2.5 px-5">Add Appliance</button>
+        </div>
+      </div>
+
+      <!-- Real-time total -->
+      <div class="card p-5 mb-6 flex items-center justify-between">
+        <div>
+          <div class="text-xs text-slate-500 mb-1">Real-time Total Load</div>
+          <div class="font-display font-black text-3xl text-navy" id="appliance-total">0 W</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-500 mb-1">With 30% buffer</div>
+          <div class="font-display font-bold text-xl text-solar" id="appliance-total-buffered">0 W</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKUP HOURS -->
+    <div class="card p-6 mb-6">
+      <h3 class="font-display font-bold text-navy mb-4">Desired Backup Duration</h3>
+      <div class="grid grid-cols-3 gap-3">
+        <button class="backup-btn py-3 rounded-xl border-2 border-slate-200 font-display font-semibold text-sm text-slate-600 hover:border-solar transition-all" data-hours="6" onclick="selectBackup(6, this)">6 Hours</button>
+        <button class="backup-btn py-3 rounded-xl border-2 border-solar bg-solar/10 font-display font-semibold text-sm text-navy" data-hours="8" onclick="selectBackup(8, this)">8 Hours ⭐</button>
+        <button class="backup-btn py-3 rounded-xl border-2 border-slate-200 font-display font-semibold text-sm text-slate-600 hover:border-solar transition-all" data-hours="10" onclick="selectBackup(10, this)">10 Hours</button>
+      </div>
+    </div>
+
+    <button onclick="runCalculation()" class="btn-primary w-full text-lg py-4">
+      Generate My Solar Report →
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 4: RESULTS
+═══════════════════════════════════════════════════════ -->
+<div id="page-results" class="page min-h-screen py-12">
+  <div class="max-w-3xl mx-auto px-4">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <div class="inline-flex items-center gap-2 bg-green-100 text-green-700 rounded-full px-3 py-1 text-xs font-semibold mb-3">
+          ✓ Audit Complete
+        </div>
+        <h2 class="font-display font-black text-2xl text-navy">Your Solar System Report</h2>
+        <p class="text-slate-500 text-sm mt-1" id="result-subtitle">Designed for your project</p>
+      </div>
+      <button onclick="goToPage('calculator')" class="text-sm text-slate-400 hover:text-navy transition-colors">← Recalculate</button>
+    </div>
+
+    <!-- SYSTEM SPECS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="result-metric">
+        <div class="text-white/60 text-xs mb-1">Total Load</div>
+        <div class="font-display font-black text-white text-xl" id="r-load">—</div>
+        <div class="text-white/40 text-xs mt-1">incl. buffer</div>
+      </div>
+      <div class="result-metric">
+        <div class="text-white/60 text-xs mb-1">Inverter Size</div>
+        <div class="font-display font-black text-white text-xl" id="r-inverter">—</div>
+        <div class="text-white/40 text-xs mt-1">recommended</div>
+      </div>
+      <div class="result-metric">
+        <div class="text-white/60 text-xs mb-1">Battery Bank</div>
+        <div class="font-display font-black text-white text-xl" id="r-battery">—</div>
+        <div class="text-white/40 text-xs mt-1" id="r-battery-hours">—</div>
+      </div>
+      <div class="result-metric">
+        <div class="text-white/60 text-xs mb-1">Solar Panels</div>
+        <div class="font-display font-black text-white text-xl" id="r-panels">—</div>
+        <div class="text-white/40 text-xs mt-1">550W each</div>
+      </div>
+    </div>
+
+    <!-- SYSTEM SUMMARY -->
+    <div class="card p-6 mb-6">
+      <h3 class="font-display font-bold text-navy mb-4">System Summary</h3>
+      <div class="space-y-3 text-sm" id="r-summary">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- COST ESTIMATION -->
+    <div class="card p-6 mb-6">
+      <h3 class="font-display font-bold text-navy mb-5">💰 Cost Estimation (NGN)</h3>
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Economy -->
+        <div class="pricing-tier border border-slate-200 bg-slate-50 rounded-2xl p-5 text-center hover:shadow-lg transition-shadow">
+          <div class="font-display font-bold text-navy text-lg mb-1">Economy</div>
+          <div class="text-xs text-slate-500 mb-3">Budget-conscious setup</div>
+          <div class="font-display font-black text-navy price-amount mb-1" id="cost-low">—</div>
+          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        </div>
+        <!-- Standard -->
+        <div class="pricing-tier standard rounded-2xl p-5 text-center hover:shadow-lg transition-shadow relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="tier-badge">Recommended</span>
+          </div>
+          <div class="font-display font-bold text-navy text-lg mb-1 mt-2">Standard</div>
+          <div class="text-xs text-slate-500 mb-3">Quality brands, warranty</div>
+          <div class="font-display font-black text-navy price-amount mb-1" id="cost-std">—</div>
+          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        </div>
+        <!-- Premium -->
+        <div class="pricing-tier border border-slate-200 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-5 text-center hover:shadow-lg transition-shadow">
+          <div class="font-display font-bold text-navy text-lg mb-1">Premium</div>
+          <div class="text-xs text-slate-500 mb-3">Top-tier, long lifespan</div>
+          <div class="font-display font-black text-navy price-amount mb-1" id="cost-prem">—</div>
+          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATOR VS SOLAR -->
+    <div class="card p-6 mb-6">
+      <h3 class="font-display font-bold text-navy mb-5">⚡ Generator vs Solar Analysis</h3>
+      <div class="grid md:grid-cols-2 gap-5 mb-5">
+        <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+          <div class="font-display font-bold text-red-700 mb-3">🛢️ Generator (Monthly Cost)</div>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-600">Fuel cost/month</span><span class="font-bold text-slate-800" id="fuel-monthly">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-600">Yearly fuel cost</span><span class="font-bold text-slate-800" id="fuel-yearly">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-600">Maintenance/year</span><span class="font-bold text-slate-800" id="fuel-maint">—</span></div>
+          </div>
+        </div>
+        <div class="bg-green-50 border border-green-100 rounded-xl p-4">
+          <div class="font-display font-bold text-green-700 mb-3">☀️ Solar (Annual Savings)</div>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-600">Running cost/month</span><span class="font-bold text-slate-800">~₦0</span></div>
+            <div class="flex justify-between"><span class="text-slate-600">Annual savings</span><span class="font-bold text-green-700" id="solar-savings">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-600">Break-even period</span><span class="font-bold text-green-700" id="solar-breakeven">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMMENDATIONS -->
+    <div class="card p-6 mb-8">
+      <h3 class="font-display font-bold text-navy mb-4">📌 Engineer Recommendations</h3>
+      <div id="r-recommendations" class="space-y-3 text-sm"></div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="grid md:grid-cols-2 gap-4 mb-4">
+      <button onclick="downloadPDF()" class="btn-navy py-4 flex items-center justify-center gap-2 text-base">
+        <span>📄</span> Download PDF Report
+      </button>
+      <button onclick="sendToWhatsApp()" class="wa-btn py-4 justify-center text-base">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Send to WhatsApp
+      </button>
+    </div>
+    <button onclick="goToPage('calculator')" class="w-full py-3 text-sm text-slate-400 hover:text-navy transition-colors">← Adjust Calculation</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT ENGINE
+═══════════════════════════════════════════════════════ -->
+<script>
+/* ────────────────────────────────────────
+   STATE
+──────────────────────────────────────── */
+const state = {
+  user: { name:'', email:'', phone:'', city:'', type:'' },
+  paid: false,
+  devMode: false,
+  mode: 'simple',
+  simpleLW: 3000,
+  backupHours: 8,
+  appliances: [
+    { id:'fan',    name:'Ceiling Fans',     watts:75,    qty:0, icon:'🌀' },
+    { id:'ac1',    name:'AC (1 HP)',         watts:750,   qty:0, icon:'❄️' },
+    { id:'ac15',   name:'AC (1.5 HP)',       watts:1100,  qty:0, icon:'❄️' },
+    { id:'ac2',    name:'AC (2 HP)',         watts:1500,  qty:0, icon:'❄️' },
+    { id:'tv',     name:'Television',        watts:100,   qty:0, icon:'📺' },
+    { id:'fridge', name:'Refrigerator',      watts:300,   qty:0, icon:'🧊' },
+    { id:'light',  name:'LED Lights',        watts:10,    qty:0, icon:'💡' },
+    { id:'pump',   name:'Water Pump',        watts:750,   qty:0, icon:'🚰' },
+    { id:'laptop', name:'Laptop/Computer',   watts:80,    qty:0, icon:'💻' },
+    { id:'dstv',   name:'DSTV / Decoder',    watts:30,    qty:0, icon:'📡' },
+  ],
+  results: null
+};
+
+/* ────────────────────────────────────────
+   PAGE NAVIGATION
+──────────────────────────────────────── */
+function goToPage(id) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  const target = document.getElementById('page-' + id);
+  target.style.display = 'block';
+  setTimeout(() => target.classList.add('active'), 10);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (id === 'calculator') {
+    renderApplianceList();
+    updateApplianceTotal();
+    document.getElementById('user-name-display').textContent =
+      (state.user.name || 'User') + ' — ' + (state.user.type || 'Project');
+    // Show/hide lock overlay
+    if (state.paid || state.devMode) {
+      document.getElementById('lock-overlay').style.display = 'none';
+    } else {
+      document.getElementById('lock-overlay').style.display = 'flex';
+    }
+  }
+}
+
+/* ────────────────────────────────────────
+   DEV MODE
+──────────────────────────────────────── */
+function toggleDevMode() {
+  state.devMode = !state.devMode;
+  document.getElementById('dev-banner').classList.toggle('hidden', !state.devMode);
+  if (state.devMode) {
+    state.user = { name:'Dev User', email:'dev@test.com', phone:'08012345678', city:'Lagos', type:'Home' };
+    localStorage.setItem('solarscope_session', JSON.stringify({ paid: true, user: state.user }));
+    state.paid = true;
+    alert('Dev Mode ON — payment bypassed. Click "Start Audit" to access calculator.');
+  }
+}
+function disableDevMode() {
+  state.devMode = false;
+  state.paid = false;
+  localStorage.removeItem('solarscope_session');
+  document.getElementById('dev-banner').classList.add('hidden');
+}
+
+function resetSession() {
+  // Clear all stored data
+  localStorage.removeItem('solarscope_session');
+  localStorage.removeItem('solarscope_user');
+  // Reset state
+  state.paid = false;
+  state.devMode = false;
+  state.user = { name:'', email:'', phone:'', city:'', type:'' };
+  state.results = null;
+  state.simpleLW = 3000;
+  state.backupHours = 8;
+  state.appliances.forEach(a => a.qty = 0);
+  // Reset form fields
+  ['inp-name','inp-email','inp-phone','inp-city'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const sel = document.getElementById('inp-type');
+  if (sel) sel.value = '';
+  // Hide dev banner, go back to landing
+  document.getElementById('dev-banner').classList.add('hidden');
+  updateSimpleLoad(3000);
+  goToPage('landing');
+}
+
+/* ────────────────────────────────────────
+   FORM HANDLING
+──────────────────────────────────────── */
+function handleFormSubmit() {
+  const name  = document.getElementById('inp-name').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  const city  = document.getElementById('inp-city').value.trim();
+  const type  = document.getElementById('inp-type').value;
+  const errEl = document.getElementById('form-error');
+
+  if (!name || !email || !phone || !city || !type) {
+    errEl.textContent = 'Please fill in all fields to continue.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!emailOk) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  errEl.classList.add('hidden');
+  state.user = { name, email, phone, city, type };
+  localStorage.setItem('solarscope_user', JSON.stringify(state.user));
+
+  if (state.devMode || state.paid) {
+    goToPage('calculator');
+    return;
+  }
+  initPaystack();
+}
+
+/* ────────────────────────────────────────
+   PAYSTACK PAYMENT
+──────────────────────────────────────── */
+function initPaystack() {
+  // Replace with your actual Paystack public key
+  const PAYSTACK_KEY = 'pk_test_1890d5b7244cda998dd8621046b73d6f089cfed5';
+
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_KEY,
+    email: state.user.email,
+    amount: 1000000, // 10,000 NGN in kobo
+    currency: 'NGN',
+    ref: 'SOLAR_' + Date.now() + '_' + Math.floor(Math.random() * 99999),
+    metadata: {
+      custom_fields: [
+        { display_name: 'Name',    variable_name: 'name',    value: state.user.name },
+        { display_name: 'Project', variable_name: 'project', value: state.user.type },
+        { display_name: 'City',    variable_name: 'city',    value: state.user.city },
+      ]
+    },
+    callback: function(response) {
+      // Payment successful
+      state.paid = true;
+      const session = { paid: true, ref: response.reference, user: state.user, ts: Date.now() };
+      localStorage.setItem('solarscope_session', JSON.stringify(session));
+      goToPage('calculator');
+    },
+    onClose: function() {
+      // User closed payment modal
+      console.log('Payment modal closed');
+    }
+  });
+  handler.openIframe();
+}
+
+/* ────────────────────────────────────────
+   MODE TABS
+──────────────────────────────────────── */
+function setMode(mode) {
+  state.mode = mode;
+  document.getElementById('mode-simple').classList.toggle('hidden', mode !== 'simple');
+  document.getElementById('mode-appliance').classList.toggle('hidden', mode !== 'appliance');
+  document.getElementById('tab-simple').className    = 'tab-btn ' + (mode==='simple'    ? 'active' : 'inactive');
+  document.getElementById('tab-appliance').className = 'tab-btn ' + (mode==='appliance' ? 'active' : 'inactive');
+}
+
+/* ────────────────────────────────────────
+   SIMPLE LOAD
+──────────────────────────────────────── */
+function updateSimpleLoad(v) {
+  const w = parseInt(v) || 0;
+  state.simpleLW = w;
+  document.getElementById('simple-display').textContent = w.toLocaleString() + ' W';
+  document.getElementById('load-slider').value = Math.min(w, 30000);
+}
+
+/* ────────────────────────────────────────
+   APPLIANCE BUILDER
+──────────────────────────────────────── */
+function renderApplianceList() {
+  const container = document.getElementById('appliance-list');
+  container.innerHTML = '';
+  state.appliances.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-4 py-3 border-b border-slate-50';
+    row.innerHTML = `
+      <span class="text-2xl w-8 text-center">${a.icon}</span>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-navy text-sm">${a.name}</div>
+        <div class="text-xs text-slate-400">${a.watts}W each</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="qty-btn" onclick="adjustQty(${i},-1)">−</button>
+        <span class="font-display font-bold text-navy w-6 text-center" id="qty-${i}">${a.qty}</span>
+        <button class="qty-btn" onclick="adjustQty(${i},1)">+</button>
+      </div>
+      <div class="text-right min-w-[70px]">
+        <div class="font-semibold text-navy text-sm" id="watt-${i}">${(a.watts*a.qty).toLocaleString()} W</div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function adjustQty(i, delta) {
+  state.appliances[i].qty = Math.max(0, state.appliances[i].qty + delta);
+  document.getElementById('qty-' + i).textContent = state.appliances[i].qty;
+  const total = state.appliances[i].watts * state.appliances[i].qty;
+  document.getElementById('watt-' + i).textContent = total.toLocaleString() + ' W';
+  updateApplianceTotal();
+}
+
+function addCustomAppliance() {
+  const name  = document.getElementById('custom-name').value.trim();
+  const watts = parseInt(document.getElementById('custom-watts').value) || 0;
+  if (!name || !watts) { alert('Please enter appliance name and wattage.'); return; }
+  state.appliances.push({ id:'custom_'+Date.now(), name, watts, qty:1, icon:'🔌' });
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-watts').value = '';
+  renderApplianceList();
+  updateApplianceTotal();
+}
+
+function updateApplianceTotal() {
+  const total = state.appliances.reduce((s, a) => s + a.watts * a.qty, 0);
+  const buffered = Math.round(total * 1.3);
+  document.getElementById('appliance-total').textContent         = total.toLocaleString() + ' W';
+  document.getElementById('appliance-total-buffered').textContent = buffered.toLocaleString() + ' W';
+}
+
+/* ────────────────────────────────────────
+   BACKUP HOURS SELECTOR
+──────────────────────────────────────── */
+function selectBackup(hours, btn) {
+  state.backupHours = hours;
+  document.querySelectorAll('.backup-btn').forEach(b => {
+    b.className = 'backup-btn py-3 rounded-xl border-2 border-slate-200 font-display font-semibold text-sm text-slate-600 hover:border-solar transition-all';
+  });
+  btn.className = 'backup-btn py-3 rounded-xl border-2 border-solar bg-solar/10 font-display font-semibold text-sm text-navy';
+}
+
+/* ────────────────────────────────────────
+   CALCULATION ENGINE
+──────────────────────────────────────── */
+function runCalculation() {
+  let rawLoad = 0;
+  if (state.mode === 'simple') {
+    rawLoad = state.simpleLW;
+  } else {
+    rawLoad = state.appliances.reduce((s, a) => s + a.watts * a.qty, 0);
+  }
+
+  if (rawLoad < 100) {
+    alert('Please enter a load value greater than 100W to continue.');
+    return;
+  }
+
+  const buffer      = 1.30;
+  const totalLoad   = Math.round(rawLoad * buffer);       // W with buffer
+  const totalLoadKW = totalLoad / 1000;                   // kW
+  const pf          = 0.8;                                 // power factor
+  const inverterKVA = totalLoadKW / pf;                   // kVA
+
+  // Standard inverter sizes
+  const inverterSizes = [1,1.5,2,3,3.5,5,7.5,10,15,20,25,30];
+  const inverterSize  = inverterSizes.find(s => s >= inverterKVA) || (Math.ceil(inverterKVA * 2) / 2);
+
+  // Battery: 48V system (standard for >3kVA)
+  const voltage     = inverterKVA > 3 ? 48 : 24;
+  const dod         = 0.80;                               // 80% depth of discharge
+  const energyNeeded = (totalLoad / 1000) * state.backupHours;  // kWh
+  const batteryAh   = Math.ceil((energyNeeded * 1000) / (voltage * dod));
+
+  // Round to standard battery sizes (100Ah, 150Ah, 200Ah, etc.)
+  const stdAh = [50,100,150,200,250,300,400,500];
+  const singleAh = stdAh.find(a => a >= batteryAh) || Math.ceil(batteryAh / 100) * 100;
+
+  // Panels (550W each, PSH=5hrs Nigeria)
+  const psh         = 5;
+  const panelWatts  = 550;
+  const panels      = Math.ceil((totalLoad / 1000 * state.backupHours) / (psh * (panelWatts/1000)));
+  const panelKWP    = (panels * panelWatts) / 1000;
+
+  // Costs (NGN estimates, mid-2024)
+  const invCostPerKVA = { low: 90000, std: 140000, prem: 200000 };
+  const batCostPerAh  = { low: 1800,  std: 2800,   prem: 4200 };
+  const panelCostEach = { low: 95000, std: 145000,  prem: 200000 };
+  const installCost   = { low: 80000, std: 150000,  prem: 250000 };
+
+  const costLow  = (inverterSize * invCostPerKVA.low)  + (singleAh * batCostPerAh.low  * (voltage/12)) + (panels * panelCostEach.low)  + installCost.low;
+  const costStd  = (inverterSize * invCostPerKVA.std)  + (singleAh * batCostPerAh.std  * (voltage/12)) + (panels * panelCostEach.std)  + installCost.std;
+  const costPrem = (inverterSize * invCostPerKVA.prem) + (singleAh * batCostPerAh.prem * (voltage/12)) + (panels * panelCostEach.prem) + installCost.prem;
+
+  // Generator vs Solar
+  const fuelLitresPerHr  = totalLoad / 1000 * 0.5;      // ~0.5L per kWh
+  const fuelHoursPerDay  = state.backupHours;
+  const fuelCostPerLitre = 800;                          // NGN/L
+  const fuelMonthly = fuelLitresPerHr * fuelHoursPerDay * 30 * fuelCostPerLitre;
+  const fuelYearly  = fuelMonthly * 12;
+  const maintYearly = fuelYearly * 0.15;
+  const totalGenYearly = fuelYearly + maintYearly;
+  const breakevenYrs = costStd / totalGenYearly;
+
+  state.results = {
+    rawLoad, totalLoad, totalLoadKW, inverterKVA, inverterSize,
+    voltage, batteryAh: singleAh, panels, panelKWP,
+    costLow, costStd, costPrem,
+    fuelMonthly, fuelYearly, maintYearly, totalGenYearly, breakevenYrs,
+    backupHours: state.backupHours
+  };
+
+  populateResults();
+  goToPage('results');
+}
+
+/* ────────────────────────────────────────
+   POPULATE RESULTS
+──────────────────────────────────────── */
+function populateResults() {
+  const r = state.results;
+  const fmt = n => '₦' + Math.round(n).toLocaleString();
+
+  document.getElementById('result-subtitle').textContent =
+    `${state.user.type || 'Project'} · ${state.user.city || ''} · ${r.backupHours}hr backup`;
+
+  document.getElementById('r-load').textContent     = (r.totalLoad/1000).toFixed(2) + ' kW';
+  document.getElementById('r-inverter').textContent = r.inverterSize + ' kVA';
+  document.getElementById('r-battery').textContent  = r.voltage + 'V/' + r.batteryAh + 'Ah';
+  document.getElementById('r-battery-hours').textContent = r.backupHours + 'hr backup';
+  document.getElementById('r-panels').textContent   = r.panels + ' panels';
+
+  // Summary
+  document.getElementById('r-summary').innerHTML = `
+    <div class="flex justify-between py-2 border-b border-slate-50">
+      <span class="text-slate-500">Base Load (without buffer)</span>
+      <span class="font-semibold text-navy">${(r.rawLoad/1000).toFixed(2)} kW</span>
+    </div>
+    <div class="flex justify-between py-2 border-b border-slate-50">
+      <span class="text-slate-500">Total Load (with 30% buffer)</span>
+      <span class="font-semibold text-navy">${(r.totalLoad/1000).toFixed(2)} kW</span>
+    </div>
+    <div class="flex justify-between py-2 border-b border-slate-50">
+      <span class="text-slate-500">Inverter Requirement</span>
+      <span class="font-semibold text-navy">${r.inverterKVA.toFixed(2)} kVA → <strong>${r.inverterSize} kVA</strong></span>
+    </div>
+    <div class="flex justify-between py-2 border-b border-slate-50">
+      <span class="text-slate-500">Battery Bank</span>
+      <span class="font-semibold text-navy">${r.voltage}V system · ${r.batteryAh}Ah</span>
+    </div>
+    <div class="flex justify-between py-2 border-b border-slate-50">
+      <span class="text-slate-500">Solar Array</span>
+      <span class="font-semibold text-navy">${r.panels} × 550W = ${r.panelKWP.toFixed(2)} kWp</span>
+    </div>
+    <div class="flex justify-between py-2">
+      <span class="text-slate-500">Backup Duration</span>
+      <span class="font-semibold text-navy">${r.backupHours} hours</span>
+    </div>
+  `;
+
+  document.getElementById('cost-low').textContent  = fmt(r.costLow);
+  document.getElementById('cost-std').textContent  = fmt(r.costStd);
+  document.getElementById('cost-prem').textContent = fmt(r.costPrem);
+
+  document.getElementById('fuel-monthly').textContent = fmt(r.fuelMonthly);
+  document.getElementById('fuel-yearly').textContent  = fmt(r.fuelYearly);
+  document.getElementById('fuel-maint').textContent   = fmt(r.maintYearly);
+  document.getElementById('solar-savings').textContent = fmt(r.totalGenYearly);
+  document.getElementById('solar-breakeven').textContent = r.breakevenYrs < 1
+    ? Math.round(r.breakevenYrs * 12) + ' months'
+    : r.breakevenYrs.toFixed(1) + ' years';
+
+  // Recommendations
+  const recs = [];
+  if (r.inverterSize >= 5) recs.push('Consider a hybrid inverter (MPPT + grid-tie ready) for future scalability.');
+  if (r.panels > 8) recs.push('Use a string inverter or multiple MPPT inputs to handle your ' + r.panels + '-panel array efficiently.');
+  if (r.voltage === 48) recs.push('A 48V battery system is recommended for your load size — more efficient and safer than 12V/24V.');
+  if (r.backupHours === 10) recs.push('For 10-hour backup, consider Lithium Iron Phosphate (LiFePO₄) batteries for deeper discharge and longer cycle life.');
+  recs.push('Always install a DC isolator, AC breaker, and surge protection devices (SPDs) for safety.');
+  recs.push('Ensure your roof or mounting surface can support ~' + Math.round(r.panels * 12) + 'kg of panels and racking.');
+
+  document.getElementById('r-recommendations').innerHTML = recs.map(rec =>
+    `<div class="flex gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+      <span class="text-blue-500 mt-0.5 flex-shrink-0">💡</span>
+      <p class="text-slate-700">${rec}</p>
+    </div>`
+  ).join('');
+}
+
+/* ────────────────────────────────────────
+   PDF GENERATION
+──────────────────────────────────────── */
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+  const r = state.results;
+  const u = state.user;
+  const fmt = n => '₦' + Math.round(n).toLocaleString();
+
+  const navy  = [10, 37, 64];
+  const solar = [253, 184, 19];
+  const grey  = [100, 116, 139];
+  const light = [245, 247, 250];
+  const w = 210, margin = 18;
+
+  // Header bar
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, w, 38, 'F');
+
+  doc.setTextColor(253, 184, 19);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.text('SolarScope', margin, 18);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Instant Solar Audit Platform', margin, 25);
+  doc.text('Generated: ' + new Date().toLocaleString(), margin, 31);
+
+  // Reference number
+  doc.setTextColor(253, 184, 19);
+  doc.setFontSize(8);
+  doc.text('REF: SS-' + Date.now().toString().slice(-8), w - margin, 25, { align:'right' });
+
+  let y = 50;
+
+  // Section: Client Info
+  const section = (title, yy) => {
+    doc.setFillColor(...light);
+    doc.rect(margin, yy, w - margin*2, 8, 'F');
+    doc.setTextColor(...navy);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(title, margin + 4, yy + 5.5);
+    return yy + 14;
+  };
+
+  const row = (label, value, yy, highlight=false) => {
+    if (highlight) { doc.setFillColor(...solar); doc.rect(margin, yy-4, w-margin*2, 8, 'F'); }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...grey);
+    doc.text(label, margin + 4, yy);
+    doc.setTextColor(...navy);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(value), w - margin, yy, { align:'right' });
+    return yy + 8;
+  };
+
+  y = section('CLIENT INFORMATION', y);
+  y = row('Full Name', u.name, y);
+  y = row('Email Address', u.email, y);
+  y = row('Phone Number', u.phone, y);
+  y = row('Location', u.city, y);
+  y = row('Project Type', u.type, y);
+  y += 6;
+
+  y = section('SYSTEM SPECIFICATIONS', y);
+  y = row('Base Load (without buffer)', (r.rawLoad/1000).toFixed(2) + ' kW', y);
+  y = row('Total Load (with 30% buffer)', (r.totalLoad/1000).toFixed(2) + ' kW', y);
+  y = row('Inverter Requirement', r.inverterKVA.toFixed(2) + ' kVA → ' + r.inverterSize + ' kVA', y);
+  y = row('Battery System Voltage', r.voltage + 'V', y);
+  y = row('Battery Capacity', r.batteryAh + ' Ah', y);
+  y = row('Solar Panels Required', r.panels + ' × 550W = ' + r.panelKWP.toFixed(2) + ' kWp', y);
+  y = row('Backup Duration', r.backupHours + ' hours', y);
+  y += 6;
+
+  y = section('COST ESTIMATION (NGN)', y);
+  y = row('Economy Package (Budget Setup)', fmt(r.costLow), y);
+  y = row('Standard Package (Recommended)', fmt(r.costStd), y);
+  y = row('Premium Package (Top-Tier)', fmt(r.costPrem), y);
+  y += 6;
+
+  y = section('GENERATOR VS SOLAR ANALYSIS', y);
+  y = row('Monthly Fuel Cost (Generator)', fmt(r.fuelMonthly), y);
+  y = row('Annual Fuel Cost', fmt(r.fuelYearly), y);
+  y = row('Annual Maintenance Cost', fmt(r.maintYearly), y);
+  y = row('Total Annual Generator Expense', fmt(r.totalGenYearly), y);
+  y = row('Solar Break-even Period', r.breakevenYrs < 1
+    ? Math.round(r.breakevenYrs * 12) + ' months'
+    : r.breakevenYrs.toFixed(1) + ' years', y);
+  y += 10;
+
+  // Disclaimer
+  doc.setFillColor(...navy);
+  doc.rect(margin, y, w - margin*2, 1, 'F');
+  y += 6;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grey);
+  doc.text('DISCLAIMER: This report provides estimates based on standard engineering principles. Actual costs may vary based on', margin, y);
+  y += 4.5;
+  doc.text('market prices, site conditions, and equipment choices. Consult a certified solar installer for final specifications.', margin, y);
+  y += 8;
+
+  // Footer
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...solar);
+  doc.text('SolarScope — Instant Solar Audit Platform', margin, y);
+  doc.setTextColor(...grey);
+  doc.setFont('helvetica', 'normal');
+  doc.text('www.solarscope.ng', w - margin, y, { align:'right' });
+
+  doc.save('SolarScope_Audit_' + u.name.replace(/\s/g,'_') + '.pdf');
+}
+
+/* ────────────────────────────────────────
+   WHATSAPP SHARE
+──────────────────────────────────────── */
+function sendToWhatsApp() {
+  const r = state.results;
+  const u = state.user;
+  const fmt = n => '₦' + Math.round(n).toLocaleString();
+
+  const msg = encodeURIComponent(
+`☀️ *SolarScope Audit Report*
+━━━━━━━━━━━━━━━━━━━━━
+👤 *Client:* ${u.name}
+📍 *Location:* ${u.city}
+🏗️ *Project:* ${u.type}
+
+⚡ *System Specifications:*
+• Total Load: ${(r.totalLoad/1000).toFixed(2)} kW (with 30% buffer)
+• Inverter: ${r.inverterSize} kVA
+• Battery: ${r.voltage}V / ${r.batteryAh}Ah (${r.backupHours}hr backup)
+• Panels: ${r.panels} × 550W (${r.panelKWP.toFixed(2)} kWp)
+
+💰 *Cost Estimates:*
+• Economy: ${fmt(r.costLow)}
+• Standard: ${fmt(r.costStd)}
+• Premium: ${fmt(r.costPrem)}
+
+📊 *ROI Analysis:*
+• Monthly fuel savings: ${fmt(r.fuelMonthly)}
+• Break-even period: ${r.breakevenYrs < 1 ? Math.round(r.breakevenYrs*12)+' months' : r.breakevenYrs.toFixed(1)+' years'}
+
+_Generated by SolarScope — solarscope.ng_`
+  );
+
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+/* ────────────────────────────────────────
+   SCROLL REVEAL
+──────────────────────────────────────── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+/* ────────────────────────────────────────
+   SESSION RESTORE
+──────────────────────────────────────── */
+(function restoreSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem('solarscope_session') || 'null');
+    if (session && session.paid) {
+      state.paid = true;
+      state.user = session.user || state.user;
+    }
+    const user = JSON.parse(localStorage.getItem('solarscope_user') || 'null');
+    if (user) state.user = user;
+  } catch(e) {}
+})();
+
+// Init slider
+document.getElementById('simple-load').value = state.simpleLW;
+document.getElementById('load-slider').value = state.simpleLW;
+updateSimpleLoad(state.simpleLW);
+</script>
+</body>
+</html>
