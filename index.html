@@ -227,9 +227,10 @@
     }
     .pricing-tier.standard { border-color: #FDB813; background: rgba(253,184,19,0.05); }
     .pricing-tier .price-amount {
-      font-size: 1.75rem;
+      font-size: 2rem;
       line-height: 1.2;
       letter-spacing: -0.02em;
+      font-weight: 800;
     }
 
     /* PROGRESS STEPS */
@@ -845,31 +846,29 @@
 
     <!-- COST ESTIMATION -->
     <div class="card p-6 mb-6">
-      <h3 class="font-display font-bold text-navy mb-5">💰 Cost Estimation (NGN)</h3>
-      <div class="grid md:grid-cols-3 gap-6">
+      <h3 class="font-display font-bold text-navy mb-5 text-xl">💰 Cost Estimation (NGN)</h3>
+      <div class="grid md:grid-cols-3 gap-3">
         <!-- Economy -->
-        <div class="pricing-tier border border-slate-200 bg-slate-50 rounded-2xl p-5 text-center hover:shadow-lg transition-shadow">
-          <div class="font-display font-bold text-navy text-lg mb-1">Economy</div>
-          <div class="text-xs text-slate-500 mb-3">Budget-conscious setup</div>
-          <div class="font-display font-black text-navy price-amount mb-1" id="cost-low">—</div>
-          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        <div class="pricing-tier border-2 border-slate-200 bg-slate-50 rounded-2xl p-3 text-center hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col">
+          <div class="font-bold text-navy text-sm mb-1">Economy</div>
+          <div class="text-xs text-slate-500 mb-1">Budget-conscious setup</div>
+          <div class="font-bold text-lg text-navy mb-1 flex-grow" id="cost-low">—</div>
+          <div class="text-xs text-slate-400">est. total</div>
         </div>
         <!-- Standard -->
-        <div class="pricing-tier standard rounded-2xl p-5 text-center hover:shadow-lg transition-shadow relative">
-          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-            <span class="tier-badge">Recommended</span>
-          </div>
-          <div class="font-display font-bold text-navy text-lg mb-1 mt-2">Standard</div>
-          <div class="text-xs text-slate-500 mb-3">Quality brands, warranty</div>
-          <div class="font-display font-black text-navy price-amount mb-1" id="cost-std">—</div>
-          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        <div class="pricing-tier standard border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-3 text-center hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col">
+          <div class="inline-block self-center px-2 py-0.5 bg-amber-400 text-white text-xs font-bold rounded-full mb-1">Recommended</div>
+          <div class="font-bold text-navy text-sm mb-1">Standard</div>
+          <div class="text-xs text-slate-500 mb-1">Quality brands, warranty</div>
+          <div class="font-bold text-lg text-navy mb-1 flex-grow" id="cost-std">—</div>
+          <div class="text-xs text-slate-400">est. total</div>
         </div>
         <!-- Premium -->
-        <div class="pricing-tier border border-slate-200 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-5 text-center hover:shadow-lg transition-shadow">
-          <div class="font-display font-bold text-navy text-lg mb-1">Premium</div>
-          <div class="text-xs text-slate-500 mb-3">Top-tier, long lifespan</div>
-          <div class="font-display font-black text-navy price-amount mb-1" id="cost-prem">—</div>
-          <div class="text-xs text-slate-400 mt-auto">est. total</div>
+        <div class="pricing-tier border-2 border-slate-200 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-3 text-center hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col">
+          <div class="font-bold text-navy text-sm mb-1">Premium</div>
+          <div class="text-xs text-slate-500 mb-1">Top-tier, long lifespan</div>
+          <div class="font-bold text-lg text-navy mb-1 flex-grow" id="cost-prem">—</div>
+          <div class="text-xs text-slate-400">est. total</div>
         </div>
       </div>
     </div>
