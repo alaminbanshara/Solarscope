@@ -1043,11 +1043,29 @@ function handleFormSubmit() {
   state.user = { name, email, phone, city, type };
   localStorage.setItem('solarscope_user', JSON.stringify(state.user));
 
+  console.log('Form submitted, user data:', state.user);
+  console.log('devMode:', state.devMode, 'paid:', state.paid);
+
   if (state.devMode || state.paid) {
     goToPage('calculator');
     return;
   }
-  initPaystack();
+  
+  // Show loading indicator while preparing payment
+  const btn = document.querySelector('button[onclick="handleFormSubmit()"]');
+  if (btn) {
+    btn.innerHTML = '⏳ Preparing Payment...';
+    btn.disabled = true;
+  }
+  
+  // Small delay to ensure Paystack is loaded
+  setTimeout(function() {
+    initPaystack();
+    if (btn) {
+      btn.innerHTML = 'Proceed to Payment →';
+      btn.disabled = false;
+    }
+  }, 100);
 }
 
 /* ────────────────────────────────────────
@@ -1056,6 +1074,18 @@ function handleFormSubmit() {
 function initPaystack() {
   // Replace with your actual Paystack public key
   const PAYSTACK_KEY = 'pk_test_1890d5b7244cda998dd8621046b73d6f089cfed5';
+
+  console.log('Initializing Paystack payment...');
+  console.log('User email:', state.user.email);
+  console.log('PaystackPop available:', typeof PaystackPop !== 'undefined');
+
+  if (typeof PaystackPop === 'undefined') {
+    alert('Paystack is not loaded. Please refresh the page and try again.\n\nIf the problem persists, try enabling Dev Mode to test the calculator.');
+    // Enable dev mode as fallback
+    state.devMode = true;
+    goToPage('calculator');
+    return;
+  }
 
   const handler = PaystackPop.setup({
     key: PAYSTACK_KEY,
@@ -1082,7 +1112,14 @@ function initPaystack() {
       console.log('Payment modal closed');
     }
   });
-  handler.openIframe();
+  console.log('Paystack handler created, opening payment modal...');
+  
+  try {
+    handler.openIframe();
+  } catch (e) {
+    console.error('Error opening Paystack:', e);
+    alert('Unable to open payment. Please try again or use Dev Mode to test.');
+  }
 }
 
 /* ────────────────────────────────────────
