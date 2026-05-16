@@ -317,13 +317,13 @@
 </div>
 
 <!-- ═══════════════════ STICKY HEADER ═══════════════════ -->
-<header id="site-header" class="bg-white/80 border-b border-slate-100 overflow-x-hidden">
-  <div class="max-w-6xl mx-auto px-2 md:px-4 py-3 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-1.5 md:gap-2">
-      <div class="w-7 h-7 md:w-8 md:h-8 bg-solar rounded-lg flex items-center justify-center">
-        <span class="text-navy font-display font-black text-xs md:text-sm">☀</span>
+<header id="site-header" class="bg-white/80 border-b border-slate-100">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-solar rounded-lg flex items-center justify-center">
+        <span class="text-navy font-display font-black text-sm">☀</span>
       </div>
-      <span class="font-display font-bold text-navy text-base md:text-lg">Solar<span class="text-solar">Scope</span></span>
+      <span class="font-display font-bold text-navy text-lg">Solar<span class="text-solar">Scope</span></span>
     </div>
     <!-- Desktop Nav -->
     <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
@@ -331,9 +331,9 @@
       <a href="#how-it-works" class="hover:text-navy transition-colors">How it Works</a>
       <a href="#pricing" class="hover:text-navy transition-colors">Pricing</a>
     </nav>
-    <div class="flex items-center gap-2">
-      <button id="devModeToggle" onclick="toggleDevMode()" class="text-[10px] px-2 py-1 rounded-md bg-purple-100 text-purple-700 font-semibold hover:bg-purple-200 transition-colors whitespace-nowrap">Dev</button>
-      <button onclick="goToPage('form')" class="btn-primary text-xs py-2 px-3 md:text-sm md:py-2.5 md:px-5" style="animation:none">Start →</button>
+    <div class="flex items-center gap-3">
+      <button id="devModeToggle" onclick="toggleDevMode()" class="hidden md:block text-xs px-3 py-1.5 rounded-lg bg-purple-100 text-purple-700 font-semibold hover:bg-purple-200 transition-colors">Dev Mode</button>
+      <button onclick="goToPage('form')" class="btn-primary text-sm py-2.5 px-5" style="animation:none">Start Audit →</button>
     </div>
   </div>
 </header>
@@ -348,14 +348,10 @@
     <div class="max-w-6xl mx-auto px-4 py-24 relative z-10 w-full">
       <div class="grid md:grid-cols-2 gap-16 items-center">
         <div>
-
-          <!-- Badge + Credit -->
-          <div class="mb-1">
-            <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white/80 text-sm fade-up hover:bg-white/20 transition-colors cursor-default">
-              <span class="w-2 h-2 bg-solar rounded-full animate-pulse"></span>
-              <span class="typing-effect">Professional Solar Audit - Instant Results</span>
-            </div>
-            <div class="text-[10px] text-white/70 text-center mt-1">Project by alaminbanshara</div>
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white/80 text-sm mb-8 fade-up hover:bg-white/20 transition-colors cursor-default">
+            <span class="w-2 h-2 bg-solar rounded-full animate-pulse"></span>
+            <span class="typing-effect">Professional Solar Audit Instant Results</span>
           </div>
 
           <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6 fade-up fade-up-1">
@@ -364,7 +360,7 @@
             <span class="inline-block">Design in Minutes</span>
           </h1>
           <p class="text-white/70 text-lg mb-10 max-w-md leading-relaxed fade-up fade-up-2">
-            No site visit. No guesswork. Professional solar audit instantly - with full cost estimates and a downloadable PDF report.
+            No site visit. No guesswork. Professional solar audit instantly with full cost estimates and a downloadable PDF report.
           </p>
 
           <!-- Social proof -->
@@ -471,19 +467,19 @@
       <div class="text-center mb-16 scroll-reveal">
         <div class="inline-block text-solar font-display font-bold text-sm uppercase tracking-widest mb-3">What You Get</div>
         <h2 class="font-display font-black text-4xl text-navy">Everything in One Report</h2>
-        <p class="text-slate-500 mt-3 max-w-lg mx-auto">Professional-grade analysis that engineers use - available to anyone in minutes.</p>
+        <p class="text-slate-500 mt-3 max-w-lg mx-auto">Professional grade analysis that engineers use available to anyone in minutes.</p>
       </div>
 
       <div class="grid md:grid-cols-3 gap-6">
         <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
           <div class="feature-icon mb-4">⚡</div>
           <h3 class="font-display font-bold text-lg text-navy mb-2">Accurate Load Calculation</h3>
-          <p class="text-slate-500 text-sm leading-relaxed">Input your appliances or total wattage — our engine handles the engineering math with 30% safety buffers.</p>
+          <p class="text-slate-500 text-sm leading-relaxed">Input your appliances or total wattage our engine handles the engineering math with 30% safety buffers.</p>
         </div>
         <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
           <div class="feature-icon mb-4">💰</div>
           <h3 class="font-display font-bold text-lg text-navy mb-2">Cost Estimation</h3>
-          <p class="text-slate-500 text-sm leading-relaxed">Get Low, Standard, and Premium pricing tiers with market-realistic NGN estimates for equipment and installation.</p>
+          <p class="text-slate-500 text-sm leading-relaxed">Get Low, Standard, and Premium pricing tiers with market realistic NGN estimates for equipment and installation.</p>
         </div>
         <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
           <div class="feature-icon mb-4">🔋</div>
@@ -493,7 +489,7 @@
         <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
           <div class="feature-icon mb-4">📄</div>
           <h3 class="font-display font-bold text-lg text-navy mb-2">Downloadable PDF Report</h3>
-          <p class="text-slate-500 text-sm leading-relaxed">A complete engineering-style report you can share with your installer or use to compare quotes.</p>
+          <p class="text-slate-500 text-sm leading-relaxed">A complete engineering style report you can share with your installer or use to compare quotes.</p>
         </div>
         <div class="card p-6 scroll-reveal hover:shadow-lg transition-shadow">
           <div class="feature-icon mb-4">💬</div>
@@ -521,7 +517,7 @@
         <div class="text-center scroll-reveal">
           <div class="w-14 h-14 bg-solar rounded-2xl flex items-center justify-center text-navy font-display font-black text-xl mx-auto mb-4">1</div>
           <h3 class="font-display font-bold text-navy mb-2">Enter Your Details</h3>
-          <p class="text-slate-500 text-sm">Tell us about your project — name, location, and project type.</p>
+          <p class="text-slate-500 text-sm">Tell us about your project name, location, and project type.</p>
         </div>
         <div class="text-center scroll-reveal">
           <div class="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-solar font-display font-black text-xl mx-auto mb-4">2</div>
@@ -543,24 +539,24 @@
       <h2 class="font-display font-black text-3xl text-white mb-4">
         Used by Homeowners, Businesses &amp; Engineers
       </h2>
-      <p class="text-white/60 mb-12">Across Nigeria — delivering professional-grade solar audits in seconds.</p>
+      <p class="text-white/60 mb-12">Across Nigeria delivering professional grade solar audits in seconds.</p>
 
       <div class="grid md:grid-cols-3 gap-6">
         <div class="glass-navy rounded-2xl p-6 text-left">
           <div class="flex mb-3">★★★★★</div>
-          <p class="text-white/80 text-sm leading-relaxed mb-4">"I used SolarScope before buying my inverter. Saved me from purchasing an undersized system. The PDF was professional enough to share with my installer."</p>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">I used SolarScope before buying my inverter. Saved me from purchasing an undersized system. The PDF was professional enough to share with my installer.</p>
           <div class="font-display font-bold text-white text-sm">Adaeze O.</div>
           <div class="text-white/40 text-xs">Homeowner, Lagos</div>
         </div>
         <div class="glass-navy rounded-2xl p-6 text-left">
           <div class="flex mb-3">★★★★★</div>
-          <p class="text-white/80 text-sm leading-relaxed mb-4">"As an electrical engineer, the calculation methodology is solid. I recommend this to my clients who want to understand their energy needs before coming to me."</p>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">As an electrical engineer, the calculation methodology is solid. I recommend this to my clients who want to understand their energy needs before coming to me.</p>
           <div class="font-display font-bold text-white text-sm">Engr. Kola B.</div>
           <div class="text-white/40 text-xs">Electrical Engineer, Abuja</div>
         </div>
         <div class="glass-navy rounded-2xl p-6 text-left">
           <div class="flex mb-3">★★★★★</div>
-          <p class="text-white/80 text-sm leading-relaxed mb-4">"We used this for our hotel project. The breakeven analysis alone was worth the ₦10,000. Convinced our board to go solar within the week."</p>
+          <p class="text-white/80 text-sm leading-relaxed mb-4">We used this for our hotel project. The breakeven analysis alone was worth the ₦10,000. Convinced our board to go solar within the week.</p>
           <div class="font-display font-bold text-white text-sm">Olu M.</div>
           <div class="text-white/40 text-xs">Hotel Manager, Port Harcourt</div>
         </div>
@@ -595,7 +591,7 @@
   <!-- FOOTER -->
   <footer class="bg-navy py-10 text-center">
     <div class="font-display font-bold text-white text-lg mb-2">Solar<span class="text-solar">Scope</span></div>
-    <p class="text-white/40 text-sm">Professional Solar Audits — Instantly</p>
+    <p class="text-white/40 text-sm">Professional Solar Audits Instantly</p>
     <p class="text-white/20 text-xs mt-4">© 2025 3stones High Tech Company. All rights reserved.</p>
   </footer>
 </div>
@@ -655,6 +651,7 @@
             <option value="Hotel">🏨 Hotel</option>
             <option value="Hospital">🏥 Hospital</option>
             <option value="Factory">🏭 Factory</option>
+            <option value="Church/School">⛪ Church / School</option>
           </select>
         </div>
       </div>
@@ -1046,29 +1043,11 @@ function handleFormSubmit() {
   state.user = { name, email, phone, city, type };
   localStorage.setItem('solarscope_user', JSON.stringify(state.user));
 
-  console.log('Form submitted, user data:', state.user);
-  console.log('devMode:', state.devMode, 'paid:', state.paid);
-
   if (state.devMode || state.paid) {
     goToPage('calculator');
     return;
   }
-  
-  // Show loading indicator while preparing payment
-  const btn = document.querySelector('button[onclick="handleFormSubmit()"]');
-  if (btn) {
-    btn.innerHTML = '⏳ Preparing Payment...';
-    btn.disabled = true;
-  }
-  
-  // Small delay to ensure Paystack is loaded
-  setTimeout(function() {
-    initPaystack();
-    if (btn) {
-      btn.innerHTML = 'Proceed to Payment →';
-      btn.disabled = false;
-    }
-  }, 100);
+  initPaystack();
 }
 
 /* ────────────────────────────────────────
@@ -1077,18 +1056,6 @@ function handleFormSubmit() {
 function initPaystack() {
   // Replace with your actual Paystack public key
   const PAYSTACK_KEY = 'pk_test_1890d5b7244cda998dd8621046b73d6f089cfed5';
-
-  console.log('Initializing Paystack payment...');
-  console.log('User email:', state.user.email);
-  console.log('PaystackPop available:', typeof PaystackPop !== 'undefined');
-
-  if (typeof PaystackPop === 'undefined') {
-    alert('Paystack is not loaded. Please refresh the page and try again.\n\nIf the problem persists, try enabling Dev Mode to test the calculator.');
-    // Enable dev mode as fallback
-    state.devMode = true;
-    goToPage('calculator');
-    return;
-  }
 
   const handler = PaystackPop.setup({
     key: PAYSTACK_KEY,
@@ -1115,14 +1082,7 @@ function initPaystack() {
       console.log('Payment modal closed');
     }
   });
-  console.log('Paystack handler created, opening payment modal...');
-  
-  try {
-    handler.openIframe();
-  } catch (e) {
-    console.error('Error opening Paystack:', e);
-    alert('Unable to open payment. Please try again or use Dev Mode to test.');
-  }
+  handler.openIframe();
 }
 
 /* ────────────────────────────────────────
