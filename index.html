@@ -333,7 +333,7 @@
     </nav>
     <div class="flex items-center gap-3">
       <button id="devModeToggle" onclick="toggleDevMode()" class="hidden md:block text-xs px-3 py-1.5 rounded-lg bg-purple-100 text-purple-700 font-semibold hover:bg-purple-200 transition-colors">Dev Mode</button>
-      <button onclick="goToPage('form')" class="btn-primary text-sm py-2.5 px-5" style="animation:none">Start Audit →</button>
+      <button onclick="goToPage('form')" class="btn-primary text-sm py-2.5 px-5" style="animation:none">Start Audit</button>
     </div>
   </div>
 </header>
@@ -522,7 +522,7 @@
         <div class="text-center scroll-reveal">
           <div class="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-solar font-display font-black text-xl mx-auto mb-4">2</div>
           <h3 class="font-display font-bold text-navy mb-2">Pay Securely</h3>
-          <p class="text-slate-500 text-sm">One-time ₦10,000 audit fee via Paystack card, transfer, or USSD.</p>
+          <p class="text-slate-500 text-sm">₦10,000 audit fee via Paystack card, transfer, or USSD.</p>
         </div>
         <div class="text-center scroll-reveal">
           <div class="w-14 h-14 bg-solar rounded-2xl flex items-center justify-center text-navy font-display font-black text-xl mx-auto mb-4">3</div>
@@ -568,22 +568,22 @@
   <section id="pricing" class="py-20 bg-white">
     <div class="max-w-2xl mx-auto px-4 text-center">
       <div class="card p-10 scroll-reveal">
-        <div class="text-5xl mb-4">☀️</div>
+        <div class="text-5xl mb-4"></div>
         <h2 class="font-display font-black text-3xl text-navy mb-3">Ready for Your Solar Audit?</h2>
-        <p class="text-slate-500 mb-3">One payment. Full access. Instant results.</p>
+        <p class="text-slate-500 mb-3">Full access Instant results.</p>
         <div class="inline-flex items-end gap-2 mb-8">
           <span class="font-display font-black text-5xl text-navy">₦10,000</span>
-          <span class="text-slate-400 mb-1">one-time</span>
+          <span class="text-slate-400 mb-1">per use</span>
         </div>
         <div class="flex flex-col gap-2 mb-8 text-sm text-slate-600">
-          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Full appliance-based load calculator</div>
+          <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Full appliance based load calculator</div>
           <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Inverter, battery &amp; panel sizing</div>
           <div class="flex items-center gap-2"><span class="text-green-500">✓</span> 3-tier cost estimation</div>
           <div class="flex items-center gap-2"><span class="text-green-500">✓</span> Downloadable PDF report</div>
           <div class="flex items-center gap-2"><span class="text-green-500">✓</span> WhatsApp sharing</div>
         </div>
-        <button class="btn-primary w-full text-lg py-4" onclick="goToPage('form')">Start Solar Audit →</button>
-        <p class="text-xs text-slate-400 mt-4">Secured by Paystack · Card, Bank Transfer, USSD accepted</p>
+        <button class="btn-primary w-full text-lg py-4" onclick="goToPage('form')">Start Solar Audit</button>
+        <p class="text-xs text-slate-400 mt-4">Secured by Paystack Card, Bank Transfer, USSD accepted</p>
       </div>
     </div>
   </section>
@@ -617,7 +617,7 @@
   <div class="max-w-lg mx-auto px-4">
     <div class="card p-8">
       <button onclick="goToPage('landing')" class="text-slate-400 hover:text-navy text-sm flex items-center gap-1 mb-6 transition-colors">
-        ← Back to Home
+        Back to Home
       </button>
 
       <div class="mb-8">
@@ -627,23 +627,23 @@
 
       <div class="space-y-5">
         <div>
-          <label class="form-label">Full Name *</label>
+          <label class="form-label">Full Name</label>
           <input id="inp-name" type="text" class="form-input" placeholder="e.g. Amaka Okafor" />
         </div>
         <div>
-          <label class="form-label">Email Address *</label>
+          <label class="form-label">Email Address</label>
           <input id="inp-email" type="email" class="form-input" placeholder="you@example.com" />
         </div>
         <div>
-          <label class="form-label">Phone Number *</label>
+          <label class="form-label">Phone Number</label>
           <input id="inp-phone" type="tel" class="form-input" placeholder="+234 XXX XXX XXXX" />
         </div>
         <div>
-          <label class="form-label">Location (City) *</label>
+          <label class="form-label">Location (City)</label>
           <input id="inp-city" type="text" class="form-input" placeholder="e.g. Lagos, Abuja, Kano" />
         </div>
         <div>
-          <label class="form-label">Project Type *</label>
+          <label class="form-label">Project Type</label>
           <select id="inp-type" class="form-input">
             <option value="">Select project type…</option>
             <option value="Home"> Home</option>
@@ -659,11 +659,11 @@
       <div id="form-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm"></div>
 
       <button onclick="handleFormSubmit()" class="btn-primary w-full mt-8 text-base">
-        Proceed to Payment →
+        Proceed to Payment
       </button>
 
       <div class="mt-4 text-center">
-        <p class="text-xs text-slate-400">🔒 Your data is stored securely and never shared.</p>
+        <p class="text-xs text-slate-400">Your data is stored securely and never shared.</p>
       </div>
     </div>
   </div>
@@ -703,7 +703,7 @@
     <div class="mb-8">
       <div class="flex items-start justify-between">
         <div>
-          <h2 class="font-display font-black text-2xl text-navy">Solar Load Calculator</h2>
+          <h2 class="font-display font-black text-2xl text-navy">Load Calculator</h2>
           <p class="text-slate-500 text-sm mt-1">Enter your energy needs to get your full system spec.</p>
         </div>
         <div class="text-right">
@@ -745,8 +745,8 @@
     <!-- MODE 2: APPLIANCE -->
     <div id="mode-appliance" class="hidden">
       <div class="card p-6 mb-4">
-        <h3 class="font-display font-bold text-navy mb-1">Appliance-Based Builder</h3>
-        <p class="text-slate-500 text-sm mb-6">Add your appliances — we calculate the total automatically.</p>
+        <h3 class="font-display font-bold text-navy mb-1">Appliance Based Builder</h3>
+        <p class="text-slate-500 text-sm mb-6">Add your appliances we calculate the total automatically.</p>
 
         <div class="space-y-4" id="appliance-list">
           <!-- Rows generated by JS -->
@@ -768,7 +768,7 @@
       <!-- Real-time total -->
       <div class="card p-5 mb-6 flex items-center justify-between">
         <div>
-          <div class="text-xs text-slate-500 mb-1">Real-time Total Load</div>
+          <div class="text-xs text-slate-500 mb-1">Real time Total Load</div>
           <div class="font-display font-black text-3xl text-navy" id="appliance-total">0 W</div>
         </div>
         <div class="text-right">
@@ -789,7 +789,7 @@
     </div>
 
     <button onclick="runCalculation()" class="btn-primary w-full text-lg py-4">
-      Generate My Solar Report →
+      Generate My Solar Report
     </button>
   </div>
 </div>
@@ -809,7 +809,7 @@
         <h2 class="font-display font-black text-2xl text-navy">Your Solar System Report</h2>
         <p class="text-slate-500 text-sm mt-1" id="result-subtitle">Designed for your project</p>
       </div>
-      <button onclick="goToPage('calculator')" class="text-sm text-slate-400 hover:text-navy transition-colors">← Recalculate</button>
+      <button onclick="goToPage('calculator')" class="text-sm text-slate-400 hover:text-navy transition-colors">Recalculate</button>
     </div>
 
     <!-- SYSTEM SPECS -->
@@ -851,7 +851,7 @@
         <!-- Economy -->
         <div class="pricing-tier border-2 border-slate-200 bg-slate-50 rounded-2xl p-3 text-center hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col">
           <div class="font-bold text-navy text-sm mb-1">Economy</div>
-          <div class="text-xs text-slate-500 mb-1">Budget-conscious setup</div>
+          <div class="text-xs text-slate-500 mb-1">Budget conscious setup</div>
           <div class="font-bold text-lg text-navy mb-1 flex-grow" id="cost-low">—</div>
           <div class="text-xs text-slate-400">est. total</div>
         </div>
@@ -912,7 +912,7 @@
         Send to WhatsApp
       </button>
     </div>
-    <button onclick="goToPage('calculator')" class="w-full py-3 text-sm text-slate-400 hover:text-navy transition-colors">← Adjust Calculation</button>
+    <button onclick="goToPage('calculator')" class="w-full py-3 text-sm text-slate-400 hover:text-navy transition-colors"> Adjust Calculation</button>
   </div>
 </div>
 
